@@ -113,17 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
       list.appendChild(li);
     });
 
-    // wire delete buttons once per render
-    list.querySelectorAll("button[data-del]").forEach((btn) => {
-      btn.onclick = () => {
-        const id  = btn.dataset.del;
-        const idx = pets.findIndex(p => p.id === id);
-        if (idx !== -1) {
-          pets.splice(idx, 1);
-          render();
-        }
-      };
-    });
+
   }
 
   // initial render
