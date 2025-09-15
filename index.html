@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pet Creator</title>
+  <style>
+    :root { --line:#e6e6e6; --muted:#666; }
+    body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
+    h1, h2 { margin: 0 0 .5rem; }
+    form { display: grid; gap: .75rem; grid-template-columns: 1fr 1fr; max-width: 720px; }
+    label { font-size:.9rem; color:#222; display:block; }
+    input { width:100%; padding:.55rem .65rem; border:1px solid #bbb; border-radius:.45rem; }
+    .full { grid-column: 1 / -1; }
+    .actions { display:flex; gap:.5rem; }
+    button { padding:.55rem .9rem; border-radius:.45rem; border:1px solid #222; background:#111; color:#fff; cursor:pointer; }
+    button.secondary { background:#f5f5f5; color:#222; border-color:#cfcfcf; }
+    hr { border:0; border-top:1px solid var(--line); margin:1.25rem 0; }
+
+    /* list */
+    ul { list-style:none; padding:0; margin:.5rem 0 0; max-width: 920px; }
+    li { display:flex; align-items:center; gap:1rem; border:1px solid var(--line); border-radius:.6rem; padding:.8rem 1rem; margin:.6rem 0; }
+    .meta { color:var(--muted); font-size:.9rem; }
+    .owner-match { color:#0a7; font-weight:600; }
+    .pet-head { font-weight:700; }
+    .grow { flex:1 1 auto; }
+  </style>
+</head>
+<body>
+
+  <h1>Crea Pet</h1>
+  <p class="meta">Compila il form per aggiungere animali domestici. Se due animali hanno lo stesso padrone verrà indicato nella lista.</p>
+
+  <form id="petForm" autocomplete="off">
+    <div class="full">
+      <label>Nome animale
+        <input name="petName" required />
+      </label>
+    </div>
+
+    <div>
+      <label>Specie
+        <input name="species" placeholder="cane, gatto, coniglio…" required />
+      </label>
+    </div>
+
+    <div>
+      <label>Razza
+        <input name="breed" placeholder="labrador, soriano, nano…" required />
+      </label>
+    </div>
+
+    <div class="full">
+      <label>Nome padrone
+        <input name="ownerName" required />
+      </label>
+    </div>
+
+    <div class="full actions">
+      <button type="submit">Aggiungi pet</button>
+      <button type="button" id="clearAll" class="secondary">Svuota lista</button>
+    </div>
+  </form>
+
+  <hr>
+
+  <h2>Lista</h2>
+  <ul id="petList" ></ul>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
