@@ -1,121 +1,72 @@
-// -------------------- Esercizio 1  --------------------
+/* ---------- Esercizio 1: lasciato com'è ---------- */
 class User {
   constructor(firstName, lastName, age, location) {
-    this.firstName = firstName;
-    this.lastName  = lastName;
-    this.age       = Number(age);
-    this.location  = location;
+    this.firstName = firstName; this.lastName = lastName;
+    this.age = +age; this.location = location;
   }
-  fullName() { return `${this.firstName} ${this.lastName}`; }
-  compareAge(other) {
-    if (this.age > other.age) return `${this.fullName()} è più vecchio di ${other.fullName()} (${this.age} vs ${other.age})`;
-    if (this.age < other.age) return `${this.fullName()} è più giovane di ${other.fullName()} (${this.age} vs ${other.age})`;
-    return `${this.fullName()} e ${other.fullName()} hanno la stessa età (${this.age})`;
+  fullName(){ return `${this.firstName} ${this.lastName}`; }
+  compareAge(o){
+    if (this.age > o.age) return `${this.fullName()} è più vecchio di ${o.fullName()} (${this.age} vs ${o.age})`;
+    if (this.age < o.age) return `${this.fullName()} è più giovane di ${o.fullName()} (${this.age} vs ${o.age})`;
+    return `${this.fullName()} e ${o.fullName()} hanno la stessa età (${this.age})`;
   }
 }
 
-// Example:
-const x = new User("Mario","Rossi",34,"Roma");
-const y = new User("Giulia","Bianchi",28,"Milano");
-const z = new User("Luca","Verdi",34,"Torino");
-console.log(x.compareAge(y));
-console.log(y.compareAge(x));
-console.log(x.compareAge(z));
-
-
-// -------------------- Esercizio 2  --------------------
+/* ---------- Esercizio 2: versione semplificata ---------- */
 class Pet {
-  constructor(petName, ownerName, species, breed) {
-    this.petName   = petName;
-    this.ownerName = ownerName;
-    this.species   = species;
-    this.breed     = breed;
-    // stable id for delete
-    this.id = (typeof crypto !== "undefined" && crypto.randomUUID)
-      ? crypto.randomUUID()
-      : "p_" + Math.random().toString(36).slice(2);
+  static _id = 0;
+  constructor(name, owner, species, breed){
+    this.id = ++Pet._id;
+    this.petName = name; this.ownerName = owner;
+    this.species = species; this.breed = breed;
   }
-  // true if two pets share the same owner (case/space-insensitive)
-  hasSameOwner(other) {
-    const norm = s => s.trim().toLowerCase();
-    return norm(this.ownerName) === norm(other.ownerName);
+  sameOwner(p){
+    const n = s => s.trim().toLowerCase();
+    return n(this.ownerName) === n(p.ownerName);
   }
 }
 
-// State
 const pets = [];
+const f  = document.getElementById('petForm');
+const ul = document.getElementById('petList');
 
-// Safe helper (single definition)
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, m => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[m]));
+f.addEventListener('submit', e=>{
+  e.preventDefault();
+  const {petName, ownerName, species, breed} = f.elements;
+  pets.push(new Pet(petName.value, ownerName.value, species.value, breed.value));
+  f.reset(); petName.focus(); render();
+});
+
+// Event delegation for delete buttons
+ul.addEventListener('click', e=>{
+  const id = e.target.dataset.del;
+  if (!id) return;
+  const i = pets.findIndex(p => p.id == id);
+  if (i > -1){ pets.splice(i,1); render(); }
+});
+
+function render(){
+  ul.innerHTML = pets.map(p=>{
+    const same = pets.filter(q => q !== p && p.sameOwner(q))
+                     .map(q => esc(q.petName)).join(', ');
+    return `<li>
+      <div>
+        <div><strong>${esc(p.petName)}</strong>
+          <span class="meta">(${esc(p.species)}, ${esc(p.breed)})</span>
+        </div>
+        <div class="meta">
+          Padrone: <strong>${esc(p.ownerName)}</strong>
+          ${same ? ` <span class="owner-match">— stesso padrone di ${same}</span>` : ''}
+        </div>
+      </div>
+      <div class="actions"><button type="button" data-del="${p.id}">Elimina</button></div>
+    </li>`;
+  }).join('');
 }
 
-// DOM + handlers
-document.addEventListener("DOMContentLoaded", () => {
-  const form     = document.getElementById("petForm");
-  const list     = document.getElementById("petList");
-  const clearBtn = document.getElementById("clearAll"); // may not exist in your HTML
+const esc = s => String(s).replace(/[&<>"']/g, m => ({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+}[m]));
 
-  if (!form || !list) return; // page doesn't contain the pet UI
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const fd = new FormData(form);
-    const pet = new Pet(
-      fd.get("petName"),
-      fd.get("ownerName"),
-      fd.get("species"),
-      fd.get("breed")
-    );
-    pets.push(pet);
-    render();
-    form.reset();
-    form.elements.namedItem("petName")?.focus();
-  });
-
-  clearBtn?.addEventListener("click", () => {
-    if (!pets.length) return;
-    if (confirm("Svuotare la lista dei pet?")) {
-      pets.splice(0, pets.length);
-      render();
-    }
-  });
-
-  function render() {
-    list.innerHTML = "";
-
-    pets.forEach((p) => {
-      // find other pets sharing same owner
-      const sameOwnerNames = pets
-        .filter(q => q !== p && p.hasSameOwner(q))
-        .map(q => q.petName);
-
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <div class="grow">
-          <div class="pet-head">
-            ${escapeHtml(p.petName)}
-            <span class="meta">(${escapeHtml(p.species)}, ${escapeHtml(p.breed)})</span>
-          </div>
-          <div class="meta">
-            Padrone: <strong>${escapeHtml(p.ownerName)}</strong>
-            ${sameOwnerNames.length
-              ? `<span class="owner-match">— stesso padrone di ${escapeHtml(sameOwnerNames.join(", "))}</span>`
-              : ""}
-          </div>
-        </div>
-        <div class="actions">
-          <button type="button" class="secondary" data-del="${p.id}">Elimina</button>
-        </div>
-      `;
-      list.appendChild(li);
-    });
-
-
-  }
-
-  // initial render
-  render();
-});
+// first paint
+render();
